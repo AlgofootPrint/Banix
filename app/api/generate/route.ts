@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { InferenceClient } from '@huggingface/inference';
+
+export const dynamic = 'force-dynamic';
 import { buildPrompt } from '@/lib/presets';
 import { HF_DIMS, ImageMode } from '@/lib/types';
 import { createClient } from '@/lib/supabase/server';
