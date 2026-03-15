@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /c/Users/damio/Desktop/youtube-banner-maker && npm install @huggingface/inference 2>&1)",
+      "Bash(cd /c/Users/damio/Desktop/youtube-banner-maker && npx tsc --noEmit 2>&1)",
+      "Bash(cd /c/Users/damio/Desktop/youtube-banner-maker && node -e \"const {InferenceClient} = require\\('@huggingface/inference'\\); console.log\\(Object.keys\\(InferenceClient.prototype\\).filter\\(k=>k.includes\\('text'\\)\\)\\)\")",
+      "Bash(cd /c/Users/damio/Desktop/youtube-banner-maker && node -e \"const hf = require\\('@huggingface/inference'\\); console.log\\(Object.keys\\(hf\\)\\)\")",
+      "Bash(find /c/Users/damio/Desktop/youtube-banner-maker/node_modules/@huggingface/tasks -name \"*.d.ts\" | xargs grep -l \"ImageToImageInput\" 2>/dev/null | head -3)",
+      "WebFetch(domain:component.gallery)",
+      "WebFetch(domain:design.wonderflow.ai)",
+      "WebFetch(domain:storybook.wonderflow.ai)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:wonderflow-bv.github.io)",
+      "Bash(cd \"C:\\\\Users\\\\damio\\\\Desktop\\\\youtube-banner-maker\" && npx tsc --noEmit 2>&1 | head -40)",
+      "Bash(cd \"C:\\\\Users\\\\damio\\\\Desktop\\\\youtube-banner-maker\" && npx tsc --noEmit 2>&1 | grep -v captionImage)"
+    ]
+  }
+}
