@@ -60,7 +60,7 @@ export default function AuthPage() {
     setError(null);
     await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${location.origin}/auth/callback` },
+      options: { redirectTo: `https://banix.vercel.app/auth/callback` },
     });
     setLoading(false);
   }
