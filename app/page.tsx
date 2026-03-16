@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ImageMode, AIMode } from '@/lib/types';
@@ -26,9 +26,20 @@ interface UsageData {
   pfpLimit: number;
 }
 
+// Isolated component so useSearchParams is inside a Suspense boundary
+function SearchParamsLoader({ onLoad }: { onLoad: (prompt: string, mode: string) => void }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const p = searchParams.get('prompt');
+    const m = searchParams.get('mode');
+    if (p || m) onLoad(p ?? '', m ?? '');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return null;
+}
+
 export default function Home() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const supabase = createClient();
 
   const [mode, setMode] = useState<ImageMode>('banner');
@@ -62,14 +73,6 @@ export default function Home() {
       // non-critical — silently ignore
     }
   }, []);
-
-  // Pre-fill from channel analyzer redirect (?prompt=...&mode=...)
-  useEffect(() => {
-    const p = searchParams.get('prompt');
-    const m = searchParams.get('mode');
-    if (p) setPrompt(p);
-    if (m === 'banner' || m === 'pfp') setMode(m);
-  }, [searchParams]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -220,6 +223,12 @@ export default function Home() {
 
   return (
     <div className="text-white relative">
+      <Suspense fallback={null}>
+        <SearchParamsLoader onLoad={(p, m) => {
+          if (p) setPrompt(p);
+          if (m === 'banner' || m === 'pfp') setMode(m);
+        }} />
+      </Suspense>
       {/* Ambient glow */}
       <div
         aria-hidden
