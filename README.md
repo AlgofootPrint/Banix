@@ -1,4 +1,4 @@
-Image an app that helps you analyze your youtube profile, create several prompts and also uses that prompt generated to generate a 
+Imagine an app that helps you analyze your youtube profile, create several prompts and also uses that prompt generated to generate a 
 perfect banner and pfp for your youtube automation channel with ease and several features to make it perfect like croping and positioning and 
 AI fill. all in one app? That is BANIX
 
