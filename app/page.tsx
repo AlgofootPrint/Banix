@@ -1,13 +1,16 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ImageMode } from '@/lib/types';
+import { ImageMode, AIMode } from '@/lib/types';
 import ModeSelector from '@/components/ModeSelector';
 import StylePresets from '@/components/StylePresets';
 import PromptInput from '@/components/PromptInput';
 import ImagePreview from '@/components/ImagePreview';
+import AIModeTabs from '@/components/AIModeTabs';
+import ImageUpload from '@/components/ImageUpload';
+import InpaintCanvas from '@/components/InpaintCanvas';
 import { createClient } from '@/lib/supabase/client';
 
 interface ErrorState {
@@ -25,9 +28,14 @@ interface UsageData {
 
 export default function Home() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
 
   const [mode, setMode] = useState<ImageMode>('banner');
+  const [aiMode, setAIMode] = useState<AIMode>('text2img');
+  const [sourceImage, setSourceImage] = useState<string | null>(null);
+  const [maskImage, setMaskImage] = useState<string | null>(null);
+  const [strength, setStrength] = useState(0.65);
   const [prompt, setPrompt] = useState('');
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -54,6 +62,14 @@ export default function Home() {
       // non-critical — silently ignore
     }
   }, []);
+
+  // Pre-fill from channel analyzer redirect (?prompt=...&mode=...)
+  useEffect(() => {
+    const p = searchParams.get('prompt');
+    const m = searchParams.get('mode');
+    if (p) setPrompt(p);
+    if (m === 'banner' || m === 'pfp') setMode(m);
+  }, [searchParams]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -87,6 +103,14 @@ export default function Home() {
     currentBlobRef.current = null;
   }
 
+  function handleAIModeChange(newAIMode: AIMode) {
+    setAIMode(newAIMode);
+    setSourceImage(null);
+    setMaskImage(null);
+    setError(null);
+    setStrength(newAIMode === 'inpaint' ? 0.99 : 0.65);
+  }
+
   async function handleGenerate() {
     if (isLoading) return;
     setIsLoading(true);
@@ -106,7 +130,15 @@ export default function Home() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers,
-        body: JSON.stringify({ prompt, mode, presetId: selectedPreset }),
+        body: JSON.stringify({
+          prompt,
+          mode,
+          presetId: selectedPreset,
+          aiMode,
+          sourceImage: sourceImage ?? undefined,
+          maskImage: maskImage ?? undefined,
+          strength,
+        }),
       });
 
       if (!res.ok) {
@@ -220,6 +252,60 @@ export default function Home() {
 
               <div className="p-5 flex flex-col gap-5">
                 <ModeSelector mode={mode} onChange={handleModeChange} />
+
+                <div className="h-px bg-zinc-800/80" />
+
+                <AIModeTabs value={aiMode} onChange={handleAIModeChange} />
+
+                {/* Image upload for img2img and inpaint */}
+                {(aiMode === 'img2img' || aiMode === 'inpaint') && (
+                  <ImageUpload
+                    value={sourceImage}
+                    onChange={(v) => { setSourceImage(v); setMaskImage(null); }}
+                    label="Source Image"
+                  />
+                )}
+
+                {/* Strength slider — img2img only */}
+                {aiMode === 'img2img' && (
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-widest">
+                        Creativity
+                      </p>
+                      <span className="text-[11px] font-mono text-zinc-400">
+                        {Math.round(strength * 100)}%
+                        <span className="text-zinc-600 ml-1.5">
+                          {strength <= 0.4 ? '· subtle' : strength <= 0.65 ? '· balanced' : '· strong'}
+                        </span>
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0.1}
+                      max={0.95}
+                      step={0.05}
+                      value={strength}
+                      onChange={(e) => setStrength(parseFloat(e.target.value))}
+                      className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
+                      style={{
+                        background: `linear-gradient(to right, #dc2626 0%, #dc2626 ${(strength - 0.1) / 0.85 * 100}%, #3f3f46 ${(strength - 0.1) / 0.85 * 100}%, #3f3f46 100%)`,
+                      }}
+                    />
+                    <div className="flex justify-between text-[10px] text-zinc-600 mt-1">
+                      <span>Faithful</span>
+                      <span>Creative</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Inpaint mask canvas */}
+                {aiMode === 'inpaint' && sourceImage && (
+                  <InpaintCanvas
+                    sourceImage={sourceImage}
+                    onMaskChange={setMaskImage}
+                  />
+                )}
 
                 <div className="h-px bg-zinc-800/80" />
 

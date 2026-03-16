@@ -2,7 +2,7 @@
 
 import { ImageMode } from '@/lib/types';
 
-const MAX_CHARS = 300;
+const MAX_CHARS = 600;
 
 const PLACEHOLDERS: Record<ImageMode, string> = {
   banner: 'e.g. "Mountain landscape at sunset with purple sky and fog in the valley"',
@@ -33,7 +33,7 @@ export default function PromptInput({ value, mode, onChange }: PromptInputProps)
       <div className="relative">
         <textarea
           value={value}
-          onChange={(e) => onChange(e.target.value.slice(0, MAX_CHARS))}
+          onChange={(e) => onChange(e.target.value)}
           placeholder={PLACEHOLDERS[mode]}
           rows={3}
           className="w-full bg-zinc-800/50 border border-zinc-700/60 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 resize-none focus:outline-none focus:border-red-500/50 focus:bg-zinc-800 transition-all leading-relaxed"

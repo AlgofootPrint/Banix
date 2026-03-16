@@ -1,4 +1,5 @@
 export type ImageMode = 'banner' | 'pfp';
+export type AIMode = 'text2img' | 'img2img' | 'inpaint';
 
 export interface StylePreset {
   id: string;
