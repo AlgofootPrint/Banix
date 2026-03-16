@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ImageMode, YOUTUBE_DIMS } from '@/lib/types';
 
 interface Props {
@@ -374,7 +375,7 @@ export default function CropEditor({ imageUrl, mode, onClose }: Props) {
   const safeRect       = getSafeRect();
   const isDraggingSafe = dragTarget.current === 'safezone';
 
-  return (
+  const content = (
     <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex flex-col">
 
       {/* Header — row 1: back + title + download (always visible) */}
@@ -646,4 +647,6 @@ export default function CropEditor({ imageUrl, mode, onClose }: Props) {
       </div>
     </div>
   );
+
+  return createPortal(content, document.body);
 }
