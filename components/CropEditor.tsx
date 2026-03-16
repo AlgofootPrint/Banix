@@ -375,7 +375,7 @@ export default function CropEditor({ imageUrl, mode, onClose }: Props) {
   const isDraggingSafe = dragTarget.current === 'safezone';
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex flex-col">
+    <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex flex-col">
 
       {/* Header — row 1: back + title + download (always visible) */}
       <div className="border-b border-zinc-800 bg-zinc-950 shrink-0">
