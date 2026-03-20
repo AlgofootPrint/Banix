@@ -24,7 +24,8 @@ export default function SolanaPayModal({ plan, billing, onClose, onSuccess }: Pr
   const [step, setStep]         = useState<Step>('loading');
   const [payment, setPayment]   = useState<PaymentData | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [copied, setCopied]     = useState(false);
+  const [copied, setCopied]         = useState(false);
+  const [copiedAddr, setCopiedAddr] = useState(false);
   const [checking, setChecking] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -111,6 +112,14 @@ export default function SolanaPayModal({ plan, billing, onClose, onSuccess }: Pr
     await navigator.clipboard.writeText(payment.url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function copyWalletAddress() {
+    if (!payment) return;
+    const address = payment.url.split('?')[0].replace('solana:', '');
+    await navigator.clipboard.writeText(address);
+    setCopiedAddr(true);
+    setTimeout(() => setCopiedAddr(false), 2000);
   }
 
   const planLabel    = plan.charAt(0).toUpperCase() + plan.slice(1);
@@ -210,6 +219,28 @@ export default function SolanaPayModal({ plan, billing, onClose, onSuccess }: Pr
                 </svg>
                 {copied ? 'Copied!' : 'Copy payment link'}
               </button>
+
+              {/* Wallet address */}
+              <div className="w-full bg-zinc-800/60 border border-zinc-700/50 rounded-xl px-3.5 py-2.5 flex items-center gap-2">
+                <span className="flex-1 text-[11px] font-mono text-zinc-400 truncate">
+                  {payment.url.split('?')[0].replace('solana:', '')}
+                </span>
+                <button
+                  onClick={copyWalletAddress}
+                  className="shrink-0 text-zinc-500 hover:text-white transition-colors"
+                  aria-label="Copy wallet address"
+                >
+                  {copiedAddr ? (
+                    <svg className="w-3.5 h-3.5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                  ) : (
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
+                    </svg>
+                  )}
+                </button>
+              </div>
 
               {/* Manual confirm button */}
               <button
