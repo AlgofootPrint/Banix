@@ -148,7 +148,12 @@ export async function POST(req: NextRequest) {
         num_images: 1,
         enable_safety_checker: false,
       };
-      const result = await fal.subscribe('fal-ai/flux/dev/image-to-image', { input: img2imgInput });
+      let result: any;
+      try {
+        result = await fal.subscribe('fal-ai/bytedance/seedream/v5/lite/edit', { input: img2imgInput });
+      } catch {
+        result = await fal.subscribe('fal-ai/nano-banana-2/edit', { input: img2imgInput });
+      }
       imageUrl = (result.data as any).images[0].url;
       /* eslint-enable @typescript-eslint/no-explicit-any */
 
@@ -165,7 +170,12 @@ export async function POST(req: NextRequest) {
         num_images: 1,
         enable_safety_checker: false,
       };
-      const result = await fal.subscribe('fal-ai/flux/dev/image-to-image', { input: inpaintInput });
+      let result: any;
+      try {
+        result = await fal.subscribe('fal-ai/bytedance/seedream/v5/lite/edit', { input: inpaintInput });
+      } catch {
+        result = await fal.subscribe('fal-ai/nano-banana-2/edit', { input: inpaintInput });
+      }
       imageUrl = (result.data as any).images[0].url;
       /* eslint-enable @typescript-eslint/no-explicit-any */
     }
