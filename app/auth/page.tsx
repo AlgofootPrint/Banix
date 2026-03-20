@@ -29,10 +29,10 @@ function EyeIcon({ open }: { open: boolean }) {
 }
 
 const FEATURES = [
-  { label: 'Banner Generation', desc: 'YouTube-spec 2048×1152 in seconds' },
-  { label: 'Profile Pictures', desc: 'Perfect 800×800 AI portraits' },
-  { label: '8 Style Presets', desc: 'Gaming, vlog, music, tech & more' },
-  { label: 'Save & Download', desc: 'Your gallery, always available' },
+  { label: 'AI Image Generation', desc: 'Banners & profile pics in seconds' },
+  { label: 'Image-to-Image & Inpaint', desc: 'Edit and refine existing visuals' },
+  { label: 'Channel Analyzer', desc: 'AI prompts tailored to your content' },
+  { label: 'Save & Download', desc: 'Full-res exports, always available' },
 ];
 
 export default function AuthPage() {
