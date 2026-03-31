@@ -39,7 +39,6 @@ export async function POST(req: NextRequest) {
       presetId,
       aiMode = 'text2img',
       sourceImage,
-      maskImage,
       strength = 0.85,
     } = body as {
       prompt: string;
@@ -47,7 +46,6 @@ export async function POST(req: NextRequest) {
       presetId: string | null;
       aiMode: AIMode;
       sourceImage?: string;
-      maskImage?: string;
       strength?: number;
     };
 
@@ -62,9 +60,6 @@ export async function POST(req: NextRequest) {
     }
     if (aiMode === 'img2img' && !sourceImage) {
       return NextResponse.json({ error: 'Source image required for image-to-image' }, { status: 400 });
-    }
-    if (aiMode === 'inpaint' && (!sourceImage || !maskImage)) {
-      return NextResponse.json({ error: 'Source image and mask required for inpainting' }, { status: 400 });
     }
 
     // ── Usage limit check ─────────────────────────────────────────
@@ -121,63 +116,57 @@ export async function POST(req: NextRequest) {
     const finalPrompt = buildPrompt(prompt ?? '', presetId ?? null);
     const dims = FAL_DIMS[mode];
 
+    // Convert a base64 data URL to a Blob so fal's transformInput auto-uploads it
+    function dataUrlToBlob(dataUrl: string): Blob {
+      const [header, base64] = dataUrl.split(',');
+      const mime = header.match(/:(.*?);/)?.[1] ?? 'image/png';
+      const buffer = Buffer.from(base64, 'base64');
+      return new Blob([buffer], { type: mime });
+    }
+
     let imageUrl: string;
 
+    // Banner → landscape_16_9, PFP → square_hd
+    const seedreamSize = mode === 'banner' ? 'landscape_16_9' : 'square_hd';
+
     if (aiMode === 'text2img') {
-      const result = await fal.subscribe('fal-ai/flux/dev', {
-        input: {
-          prompt: finalPrompt,
-          image_size: { width: dims.width, height: dims.height },
-          num_inference_steps: 28,
-          guidance_scale: 3.5,
-          num_images: 1,
-          enable_safety_checker: false,
-        },
-      });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      let result: any;
+      try {
+        result = await (fal as any).subscribe('fal-ai/bytedance/seedream/v5/lite/text-to-image', {
+          input: { prompt: finalPrompt, image_size: seedreamSize, num_images: 1 },
+        });
+      } catch {
+        result = await fal.subscribe('fal-ai/flux/dev', {
+          input: {
+            prompt: finalPrompt,
+            image_size: { width: dims.width, height: dims.height },
+            num_inference_steps: 28,
+            guidance_scale: 3.5,
+            num_images: 1,
+            enable_safety_checker: false,
+          },
+        });
+      }
       imageUrl = (result.data as any).images[0].url;
+      /* eslint-enable @typescript-eslint/no-explicit-any */
 
     } else if (aiMode === 'img2img') {
+      const sourceBlob = dataUrlToBlob(sourceImage as string);
       /* eslint-disable @typescript-eslint/no-explicit-any */
-      const img2imgInput: any = {
-        image_url: sourceImage as string,
-        prompt: finalPrompt,
-        strength,
-        num_inference_steps: 28,
-        guidance_scale: 3.5,
-        num_images: 1,
-        enable_safety_checker: false,
-      };
       let result: any;
       try {
-        result = await fal.subscribe('fal-ai/bytedance/seedream/v5/lite/edit', { input: img2imgInput });
+        result = await fal.subscribe('fal-ai/bytedance/seedream/v4/edit', {
+          input: { image_urls: [sourceBlob as any], prompt: finalPrompt, num_images: 1 },
+        });
       } catch {
-        result = await fal.subscribe('fal-ai/nano-banana-2/edit', { input: img2imgInput });
+        result = await fal.subscribe('fal-ai/nano-banana/edit', {
+          input: { image_urls: [sourceBlob as any], prompt: finalPrompt, num_images: 1 },
+        });
       }
       imageUrl = (result.data as any).images[0].url;
       /* eslint-enable @typescript-eslint/no-explicit-any */
 
-    } else {
-      // inpaint
-      /* eslint-disable @typescript-eslint/no-explicit-any */
-      const inpaintInput: any = {
-        image_url: sourceImage as string,
-        mask_url: maskImage as string,
-        prompt: finalPrompt,
-        strength,
-        num_inference_steps: 28,
-        guidance_scale: 3.5,
-        num_images: 1,
-        enable_safety_checker: false,
-      };
-      let result: any;
-      try {
-        result = await fal.subscribe('fal-ai/bytedance/seedream/v5/lite/edit', { input: inpaintInput });
-      } catch {
-        result = await fal.subscribe('fal-ai/nano-banana-2/edit', { input: inpaintInput });
-      }
-      imageUrl = (result.data as any).images[0].url;
-      /* eslint-enable @typescript-eslint/no-explicit-any */
     }
 
     // Fetch the image from Fal.ai CDN and return bytes
@@ -199,7 +188,7 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (err: unknown) {
-    const error = err as { status?: number; message?: string };
+    const error = err as { status?: number; message?: string; body?: unknown };
     const status = error?.status;
     const message = error?.message ?? 'Unknown error';
 
@@ -216,7 +205,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.error('Generate API error:', message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error('Generate API error:', message, 'body:', JSON.stringify(error?.body));
+    return NextResponse.json({ error: message, detail: error?.body }, { status: 500 });
   }
 }

@@ -10,7 +10,6 @@ import PromptInput from '@/components/PromptInput';
 import ImagePreview from '@/components/ImagePreview';
 import AIModeTabs from '@/components/AIModeTabs';
 import ImageUpload from '@/components/ImageUpload';
-import InpaintCanvas from '@/components/InpaintCanvas';
 import { createClient } from '@/lib/supabase/client';
 
 interface ErrorState {
@@ -45,7 +44,6 @@ export default function Home() {
   const [mode, setMode] = useState<ImageMode>('banner');
   const [aiMode, setAIMode] = useState<AIMode>('text2img');
   const [sourceImage, setSourceImage] = useState<string | null>(null);
-  const [maskImage, setMaskImage] = useState<string | null>(null);
   const [strength, setStrength] = useState(0.65);
   const [prompt, setPrompt] = useState('');
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
@@ -109,9 +107,7 @@ export default function Home() {
   function handleAIModeChange(newAIMode: AIMode) {
     setAIMode(newAIMode);
     setSourceImage(null);
-    setMaskImage(null);
     setError(null);
-    setStrength(newAIMode === 'inpaint' ? 0.99 : 0.65);
   }
 
   async function handleGenerate() {
@@ -139,7 +135,6 @@ export default function Home() {
           presetId: selectedPreset,
           aiMode,
           sourceImage: sourceImage ?? undefined,
-          maskImage: maskImage ?? undefined,
           strength,
         }),
       });
@@ -266,8 +261,7 @@ export default function Home() {
 
                 <AIModeTabs value={aiMode} onChange={handleAIModeChange} />
 
-                {/* Image upload for img2img and inpaint */}
-                {(aiMode === 'img2img' || aiMode === 'inpaint') && (
+                {aiMode === 'img2img' && (
                   <ImageUpload
                     value={sourceImage}
                     onChange={(v) => { setSourceImage(v); setMaskImage(null); }}
@@ -308,13 +302,6 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* Inpaint mask canvas */}
-                {aiMode === 'inpaint' && sourceImage && (
-                  <InpaintCanvas
-                    sourceImage={sourceImage}
-                    onMaskChange={setMaskImage}
-                  />
-                )}
 
                 <div className="h-px bg-zinc-800/80" />
 
