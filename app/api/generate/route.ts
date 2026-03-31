@@ -115,12 +115,12 @@ export async function POST(req: NextRequest) {
     const dims = FAL_DIMS[mode];
 
     // Convert a base64 data URL to a Blob so fal's transformInput auto-uploads it
-    function dataUrlToBlob(dataUrl: string): Blob {
+    const dataUrlToBlob = (dataUrl: string): Blob => {
       const [header, base64] = dataUrl.split(',');
       const mime = header.match(/:(.*?);/)?.[1] ?? 'image/png';
       const buffer = Buffer.from(base64, 'base64');
       return new Blob([buffer], { type: mime });
-    }
+    };
 
     let imageUrl: string;
 

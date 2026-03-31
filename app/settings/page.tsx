@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+
+const supabase = createClient();
 import { PRESETS } from '@/lib/presets';
 import type { ImageMode } from '@/lib/types';
 
@@ -43,7 +45,6 @@ function SavedBadge({ show }: { show: boolean }) {
 
 export default function SettingsPage() {
   const router = useRouter();
-  const supabase = createClient();
 
   /* Generation prefs */
   const [defaultMode, setDefaultMode] = useState<ImageMode>('banner');

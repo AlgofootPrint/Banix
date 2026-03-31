@@ -12,6 +12,8 @@ import AIModeTabs from '@/components/AIModeTabs';
 import ImageUpload from '@/components/ImageUpload';
 import { createClient } from '@/lib/supabase/client';
 
+const supabase = createClient();
+
 interface ErrorState {
   message: string;
   type: 'rateLimit' | 'modelLoading' | 'error';
@@ -39,7 +41,6 @@ function SearchParamsLoader({ onLoad }: { onLoad: (prompt: string, mode: string)
 
 export default function Home() {
   const router = useRouter();
-  const supabase = createClient();
 
   const [mode, setMode] = useState<ImageMode>('banner');
   const [aiMode, setAIMode] = useState<AIMode>('text2img');
