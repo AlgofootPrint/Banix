@@ -14,9 +14,10 @@ interface SavedImage {
   created_at: string;
 }
 
+const supabase = createClient();
+
 export default function AccountPage() {
   const router = useRouter();
-  const supabase = createClient();
 
   const [user, setUser] = useState<User | null>(null);
   const [images, setImages] = useState<SavedImage[]>([]);
@@ -42,7 +43,7 @@ export default function AccountPage() {
     }
     load();
     return () => { cancelled = true; };
-  }, []);
+  }, [router]);
 
   async function handleDelete(img: SavedImage) {
     setDeleting(img.id);
