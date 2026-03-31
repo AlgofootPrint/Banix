@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
       return new Blob([buffer], { type: mime });
     };
 
-    let imageUrl: string;
+    let imageUrl!: string;
 
     // Banner → landscape_16_9, PFP → square_hd
     const seedreamSize = mode === 'banner' ? 'landscape_16_9' : 'square_hd';
