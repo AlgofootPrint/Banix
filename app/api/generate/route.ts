@@ -39,14 +39,12 @@ export async function POST(req: NextRequest) {
       presetId,
       aiMode = 'text2img',
       sourceImage,
-      strength = 0.85,
     } = body as {
       prompt: string;
       mode: ImageMode;
       presetId: string | null;
       aiMode: AIMode;
       sourceImage?: string;
-      strength?: number;
     };
 
     if (!mode || !['banner', 'pfp'].includes(mode)) {

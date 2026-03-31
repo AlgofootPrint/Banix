@@ -44,7 +44,6 @@ export default function Home() {
   const [mode, setMode] = useState<ImageMode>('banner');
   const [aiMode, setAIMode] = useState<AIMode>('text2img');
   const [sourceImage, setSourceImage] = useState<string | null>(null);
-  const [strength, setStrength] = useState(0.65);
   const [prompt, setPrompt] = useState('');
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -135,7 +134,6 @@ export default function Home() {
           presetId: selectedPreset,
           aiMode,
           sourceImage: sourceImage ?? undefined,
-          strength,
         }),
       });
 
@@ -264,43 +262,11 @@ export default function Home() {
                 {aiMode === 'img2img' && (
                   <ImageUpload
                     value={sourceImage}
-                    onChange={(v) => { setSourceImage(v); setMaskImage(null); }}
+                    onChange={setSourceImage}
                     label="Source Image"
                   />
                 )}
 
-                {/* Strength slider — img2img only */}
-                {aiMode === 'img2img' && (
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-widest">
-                        Creativity
-                      </p>
-                      <span className="text-[11px] font-mono text-zinc-400">
-                        {Math.round(strength * 100)}%
-                        <span className="text-zinc-600 ml-1.5">
-                          {strength <= 0.4 ? '· subtle' : strength <= 0.65 ? '· balanced' : '· strong'}
-                        </span>
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min={0.1}
-                      max={0.95}
-                      step={0.05}
-                      value={strength}
-                      onChange={(e) => setStrength(parseFloat(e.target.value))}
-                      className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
-                      style={{
-                        background: `linear-gradient(to right, #dc2626 0%, #dc2626 ${(strength - 0.1) / 0.85 * 100}%, #3f3f46 ${(strength - 0.1) / 0.85 * 100}%, #3f3f46 100%)`,
-                      }}
-                    />
-                    <div className="flex justify-between text-[10px] text-zinc-600 mt-1">
-                      <span>Faithful</span>
-                      <span>Creative</span>
-                    </div>
-                  </div>
-                )}
 
 
                 <div className="h-px bg-zinc-800/80" />
